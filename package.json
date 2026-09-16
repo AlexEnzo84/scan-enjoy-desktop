@@ -7,9 +7,9 @@
   "scripts": {
     "start": "electron .",
     "test": "node --check main.cjs && node --check preload.cjs",
-    "build:windows": "electron-builder --win nsis --x64",
-    "build:mac-intel": "electron-builder --mac dmg --x64",
-    "build:mac-apple": "electron-builder --mac dmg --arm64"
+    "build:windows": "electron-builder --win nsis --x64 --publish never",
+    "build:mac-intel": "electron-builder --mac dmg --x64 --publish never",
+    "build:mac-apple": "electron-builder --mac dmg --arm64 --publish never"
   },
   "dependencies": {
     "ffmpeg-static": "^5.2.0"
