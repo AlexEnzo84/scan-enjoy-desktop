@@ -1,0 +1,81 @@
+name: Build Scan & Enjoy Desktop
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: ${{ matrix.label }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            command: npm run build:windows
+            artifact: windows-x64
+            label: Windows x64
+          - os: macos-13
+            command: npm run build:mac-intel
+            artifact: mac-intel
+            label: Mac Intel
+          - os: macos-14
+            command: npm run build:mac-apple
+            artifact: mac-apple-silicon
+            label: Mac Apple Silicon
+    runs-on: ${{ matrix.os }}
+    env:
+      CSC_IDENTITY_AUTO_DISCOVERY: "false"
+    steps:
+      - name: Descarcă sursele
+        uses: actions/checkout@v4
+
+      - name: Configurează Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalează dependențele
+        run: npm ci
+
+      - name: Verifică sursele
+        run: npm test
+
+      - name: Construiește instalatorul
+        run: ${{ matrix.command }}
+
+      - name: Păstrează instalatorul
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: |
+            dist/*.exe
+            dist/*.dmg
+          if-no-files-found: error
+          retention-days: 30
+
+  release:
+    name: Publică instalatoarele
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descarcă instalatoarele
+        uses: actions/download-artifact@v4
+        with:
+          path: installers
+          merge-multiple: true
+
+      - name: Publică versiunea
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: desktop-${{ github.run_number }}
+        run: >-
+          gh release create "$RELEASE_TAG" installers/*
+          --repo "$GITHUB_REPOSITORY"
+          --title "Scan & Enjoy Desktop $RELEASE_TAG"
+          --notes "Instalatoare Windows și macOS generate automat. Aplicațiile includ FFmpeg nativ și trimit fișierele procesate direct în albumul selectat în panoul Scan & Enjoy."
