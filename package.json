@@ -1,0 +1,32 @@
+{
+  "name": "scan-enjoy-desktop",
+  "version": "1.0.0",
+  "description": "Scan & Enjoy Admin cu procesare video FFmpeg nativă",
+  "main": "main.cjs",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "test": "node --check main.cjs && node --check preload.cjs",
+    "build:windows": "electron-builder --win nsis --x64",
+    "build:mac-intel": "electron-builder --mac dmg --x64",
+    "build:mac-apple": "electron-builder --mac dmg --arm64"
+  },
+  "dependencies": {
+    "ffmpeg-static": "^5.2.0"
+  },
+  "devDependencies": {
+    "electron": "^38.0.0",
+    "electron-builder": "^26.0.0"
+  },
+  "build": {
+    "appId": "ro.scanandenjoy.admin",
+    "productName": "Scan & Enjoy Admin",
+    "icon": "build/icon.png",
+    "files": ["main.cjs", "preload.cjs", "package.json"],
+    "asarUnpack": ["node_modules/ffmpeg-static/**"],
+    "extraResources": [{"from": "node_modules/ffmpeg-static", "to": "ffmpeg-static"}],
+    "win": {"target": ["nsis"], "artifactName": "Scan-and-Enjoy-Admin-Windows-${version}.${ext}"},
+    "mac": {"target": ["dmg"], "category": "public.app-category.business", "artifactName": "Scan-and-Enjoy-Admin-Mac-${arch}-${version}.${ext}", "hardenedRuntime": false, "gatekeeperAssess": false},
+    "nsis": {"oneClick": false, "allowToChangeInstallationDirectory": true, "createDesktopShortcut": true, "createStartMenuShortcut": true, "shortcutName": "Scan & Enjoy Admin"}
+  }
+}
